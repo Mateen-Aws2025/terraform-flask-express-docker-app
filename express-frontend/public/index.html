@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Form Submission</title>
+</head>
+<body>
+    <h1>Submit Data</h1>
+    <form id="dataForm">
+        <input type="text" name="name" placeholder="Enter Name" required />
+        <input type="email" name="email" placeholder="Enter Email" required />
+        <button type="submit">Submit</button>
+    </form>
+    <pre id="result"></pre>
+
+    <script>
+        const form = document.getElementById('dataForm');
+        const result = document.getElementById('result');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                name: form.name.value,
+                email: form.email.value
+            };
+
+            const res = await fetch('/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const json = await res.json();
+            result.textContent = JSON.stringify(json, null, 2);
+        });
+    </script>
+</body>
+</html>
+
