@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
 
 app.post('/submit', async (req, res) => {
   try {
-    const response = await fetch('http://flask-express-alb/api/submit', {
+    const response = await fetch("http://localhost/api/submit", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req.body)
