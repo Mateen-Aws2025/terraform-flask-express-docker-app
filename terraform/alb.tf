@@ -9,7 +9,7 @@ resource "aws_lb" "alb" {
 }
 
 # =========================
-# Frontend Target Group (DETACHED)
+# Frontend Target Group
 # =========================
 resource "aws_lb_target_group" "frontend" {
   name        = "${var.project_name}-frontend-tg"
@@ -30,7 +30,7 @@ resource "aws_lb_target_group" "frontend" {
 }
 
 # =========================
-# Backend Target Group (DETACHED)
+# Backend Target Group
 # =========================
 resource "aws_lb_target_group" "backend" {
   name        = "${var.project_name}-backend-tg"
@@ -39,6 +39,7 @@ resource "aws_lb_target_group" "backend" {
   vpc_id      = aws_vpc.main.id
   target_type = "ip"
 
+  # Flask returns 404 on GET /
   health_check {
     path                = "/"
     protocol            = "HTTP"
@@ -51,26 +52,35 @@ resource "aws_lb_target_group" "backend" {
 }
 
 # =========================
-# ALB Listener (DETACHED)
+# ALB Listener (HTTP : 80)
 # =========================
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.alb.arn
   port              = 80
   protocol          = "HTTP"
 
-  # TEMPORARY: no forwarding to any target group
+  # Default → Frontend
   default_action {
-    type = "fixed-response"
-
-    fixed_response {
-      content_type = "text/plain"
-      message_body = "detached"
-      status_code  = "200"
-    }
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.frontend.arn
   }
 }
 
 # =========================
-# Backend Listener Rule (INTENTIONALLY REMOVED)
+# Backend Listener Rule
 # =========================
-# DO NOT define aws_lb_listener_rule here in detach phase
+resource "aws_lb_listener_rule" "backend_rule" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 10
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.backend.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/*"]
+    }
+  }
+}
