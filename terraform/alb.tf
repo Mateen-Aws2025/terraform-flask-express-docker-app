@@ -1,4 +1,6 @@
+# =========================
 # Application Load Balancer
+# =========================
 resource "aws_lb" "alb" {
   name               = "${var.project_name}-alb"
   load_balancer_type = "application"
@@ -6,7 +8,9 @@ resource "aws_lb" "alb" {
   security_groups    = [aws_security_group.alb_sg.id]
 }
 
-# Frontend Target Group (Express – port 3000)
+# =========================
+# Frontend Target Group (DETACHED)
+# =========================
 resource "aws_lb_target_group" "frontend" {
   name        = "${var.project_name}-frontend-tg"
   port        = 3000
@@ -25,8 +29,9 @@ resource "aws_lb_target_group" "frontend" {
   }
 }
 
-
-# Backend Target Group (Flask – port 5000)
+# =========================
+# Backend Target Group (DETACHED)
+# =========================
 resource "aws_lb_target_group" "backend" {
   name        = "${var.project_name}-backend-tg"
   port        = 5000
@@ -45,40 +50,27 @@ resource "aws_lb_target_group" "backend" {
   }
 }
 
-
-# ALB Listener
+# =========================
+# ALB Listener (DETACHED)
+# =========================
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.alb.arn
   port              = 80
   protocol          = "HTTP"
 
-  # Default → Frontend
+  # TEMPORARY: no forwarding to any target group
   default_action {
-  type = "fixed-response"
+    type = "fixed-response"
 
-  fixed_response {
-    content_type = "text/plain"
-    message_body = "Temporary"
-    status_code  = "200"
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "detached"
+      status_code  = "200"
+    }
   }
 }
 
-}
-
-# Backend Listener Rule (/api/* → Flask)
-#resource "aws_lb_listener_rule" "backend_rule" {
-#  listener_arn = aws_lb_listener.http.arn
-#  priority     = 10
-#
-#  action {
-#    type             = "forward"
-#    target_group_arn = aws_lb_target_group.backend.arn
-#  }
-#
-#  condition {
-#    path_pattern {
-#      values = ["/api/*"]
-#    }
-# }
-#}
-
+# =========================
+# Backend Listener Rule (INTENTIONALLY REMOVED)
+# =========================
+# DO NOT define aws_lb_listener_rule here in detach phase
