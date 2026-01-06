@@ -54,24 +54,31 @@ resource "aws_lb_listener" "http" {
 
   # Default → Frontend
   default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.frontend.arn
+  type = "fixed-response"
+
+  fixed_response {
+    content_type = "text/plain"
+    message_body = "Temporary"
+    status_code  = "200"
   }
+}
+
 }
 
 # Backend Listener Rule (/api/* → Flask)
-resource "aws_lb_listener_rule" "backend_rule" {
-  listener_arn = aws_lb_listener.http.arn
-  priority     = 10
+#resource "aws_lb_listener_rule" "backend_rule" {
+#  listener_arn = aws_lb_listener.http.arn
+#  priority     = 10
+#
+#  action {
+#    type             = "forward"
+#    target_group_arn = aws_lb_target_group.backend.arn
+#  }
+#
+#  condition {
+#    path_pattern {
+#      values = ["/api/*"]
+#    }
+# }
+#}
 
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.backend.arn
-  }
-
-  condition {
-    path_pattern {
-      values = ["/api/*"]
-    }
-  }
-}
