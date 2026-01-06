@@ -2,6 +2,9 @@ resource "aws_ecs_cluster" "main" {
   name = "${var.project_name}-cluster"
 }
 
+# -----------------------------
+# Flask Backend Task Definition
+# -----------------------------
 resource "aws_ecs_task_definition" "flask" {
   family                   = "flask-task"
   requires_compatibilities = ["FARGATE"]
@@ -12,13 +15,32 @@ resource "aws_ecs_task_definition" "flask" {
 
   container_definitions = jsonencode([
     {
-      name  = "flask"
-      image = var.flask_image
-      portMappings = [{ containerPort = 5000 }]
+      name      = "flask"
+      image     = var.flask_image
+      essential = true
+
+      portMappings = [
+        {
+          containerPort = 5000
+          protocol      = "tcp"
+        }
+      ]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = "/ecs/flask-backend"
+          awslogs-region        = "us-east-1"
+          awslogs-stream-prefix = "ecs"
+        }
+      }
     }
   ])
 }
 
+# -------------------------------
+# Express Frontend Task Definition
+# -------------------------------
 resource "aws_ecs_task_definition" "express" {
   family                   = "express-task"
   requires_compatibilities = ["FARGATE"]
@@ -29,13 +51,32 @@ resource "aws_ecs_task_definition" "express" {
 
   container_definitions = jsonencode([
     {
-      name  = "express"
-      image = var.express_image
-      portMappings = [{ containerPort = 3000 }]
+      name      = "express"
+      image     = var.express_image
+      essential = true
+
+      portMappings = [
+        {
+          containerPort = 3000
+          protocol      = "tcp"
+        }
+      ]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = "/ecs/flask-express-frontend"
+          awslogs-region        = "us-east-1"
+          awslogs-stream-prefix = "ecs"
+        }
+      }
     }
   ])
 }
 
+# -----------------
+# Frontend Service
+# -----------------
 resource "aws_ecs_service" "frontend" {
   name            = "frontend"
   cluster         = aws_ecs_cluster.main.id
@@ -44,8 +85,8 @@ resource "aws_ecs_service" "frontend" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = aws_subnet.public[*].id
-    security_groups = [aws_security_group.ecs_sg.id]
+    subnets          = aws_subnet.public[*].id
+    security_groups  = [aws_security_group.ecs_sg.id]
     assign_public_ip = true
   }
 
@@ -54,12 +95,15 @@ resource "aws_ecs_service" "frontend" {
     container_name   = "express"
     container_port   = 3000
   }
- 
+
   depends_on = [
     aws_lb_listener.http
   ]
 }
 
+# ----------------
+# Backend Service
+# ----------------
 resource "aws_ecs_service" "backend" {
   name            = "backend"
   cluster         = aws_ecs_cluster.main.id
@@ -68,8 +112,8 @@ resource "aws_ecs_service" "backend" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = aws_subnet.public[*].id
-    security_groups = [aws_security_group.ecs_sg.id]
+    subnets          = aws_subnet.public[*].id
+    security_groups  = [aws_security_group.ecs_sg.id]
     assign_public_ip = true
   }
 
@@ -78,10 +122,9 @@ resource "aws_ecs_service" "backend" {
     container_name   = "flask"
     container_port   = 5000
   }
- 
+
   depends_on = [
     aws_lb_listener.http,
     aws_lb_listener_rule.backend_rule
   ]
 }
-
