@@ -7,10 +7,10 @@ variable "project_name" {
 }
 
 variable "flask_image" {
-  default = "391829589857.dkr.ecr.us-east-1.amazonaws.com/flask-backend:latest"
+  default = "391829589857.dkr.ecr.us-east-1.amazonaws.com/flask-backend:v3"
 }
 
 variable "express_image" {
-  default = "391829589857.dkr.ecr.us-east-1.amazonaws.com/express-frontend:v2"
+  default = "391829589857.dkr.ecr.us-east-1.amazonaws.com/express-frontend:v3"
 }
 
