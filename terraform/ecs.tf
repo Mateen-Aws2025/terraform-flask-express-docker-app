@@ -8,6 +8,7 @@ resource "aws_ecs_task_definition" "flask" {
   network_mode             = "awsvpc"
   cpu                      = 256
   memory                   = 512
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
 
   container_definitions = jsonencode([
     {
@@ -24,6 +25,7 @@ resource "aws_ecs_task_definition" "express" {
   network_mode             = "awsvpc"
   cpu                      = 256
   memory                   = 512
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
 
   container_definitions = jsonencode([
     {
@@ -52,6 +54,10 @@ resource "aws_ecs_service" "frontend" {
     container_name   = "express"
     container_port   = 3000
   }
+ 
+  depends_on = [
+    aws_lb_listener.http
+  ]
 }
 
 resource "aws_ecs_service" "backend" {
@@ -72,5 +78,10 @@ resource "aws_ecs_service" "backend" {
     container_name   = "flask"
     container_port   = 5000
   }
+ 
+  depends_on = [
+    aws_lb_listener.http,
+    aws_lb_listener_rule.backend_rule
+  ]
 }
 

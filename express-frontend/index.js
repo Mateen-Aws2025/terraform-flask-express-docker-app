@@ -1,26 +1,33 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const fetch = require('node-fetch');
+
 const app = express();
 const PORT = 3000;
 
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
-app.post('/submit', async (req, res) => {
-    const formData = req.body;
-    try {
-        const response = await fetch('http://flask-backend:5000/submit', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        });
-        const data = await response.json();
-        res.json(data);
-    } catch (err) {
-        res.status(500).json({ error: 'Backend not reachable' });
-    }
+app.get("/", (req, res) => {
+  res.send("Frontend is running");
 });
 
-app.listen(PORT, () => console.log(`Frontend running on port ${PORT}`));
+app.post('/submit', async (req, res) => {
+  try {
+    const response = await fetch('http://localhost/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body)
+    });
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Backend not reachable' });
+  }
+});
+
+app.listen(PORT, "0.0.0.0", () =>
+  console.log(`Frontend running on port ${PORT}`)
+);
 
