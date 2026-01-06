@@ -4,7 +4,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)  # Allow requests from frontend
 
-@app.route("/submit", methods=["POST"])
+@app.route("/api/submit", methods=["POST"])
 def submit():
     data = request.json
     # Just return the same data received

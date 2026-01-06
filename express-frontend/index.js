@@ -6,15 +6,19 @@ const app = express();
 const PORT = 3000;
 
 app.use(bodyParser.json());
+/* ✅ Health check for ALB */
+app.get("/", (req, res) => {
+  res.status(200).send("OK");
+});
 app.use(express.static('public'));
 
-app.get("/", (req, res) => {
+app.get("/submit", (req, res) => {
   res.send("Frontend is running");
 });
 
-app.post('/submit', async (req, res) => {
+app.post('/api/submit', async (req, res) => {
   try {
-    const response = await fetch('http://localhost/submit', {
+    const response = await fetch('/api/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req.body)
@@ -22,7 +26,6 @@ app.post('/submit', async (req, res) => {
     const data = await response.json();
     res.json(data);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: 'Backend not reachable' });
   }
 });

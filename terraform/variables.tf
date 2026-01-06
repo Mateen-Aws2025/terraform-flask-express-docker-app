@@ -11,6 +11,6 @@ variable "flask_image" {
 }
 
 variable "express_image" {
-  default = "391829589857.dkr.ecr.us-east-1.amazonaws.com/express-frontend:latest"
+  default = "391829589857.dkr.ecr.us-east-1.amazonaws.com/express-frontend:v2"
 }
 
