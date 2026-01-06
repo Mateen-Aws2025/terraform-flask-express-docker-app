@@ -8,12 +8,12 @@ resource "aws_lb" "alb" {
 
 # Frontend Target Group (Express – port 3000)
 resource "aws_lb_target_group" "frontend" {
+  name        = "${var.project_name}-frontend-tg"
   port        = 3000
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
   target_type = "ip"
 
-  # Matches: app.get("/") → returns 200 "OK"
   health_check {
     path                = "/"
     protocol            = "HTTP"
@@ -25,25 +25,26 @@ resource "aws_lb_target_group" "frontend" {
   }
 }
 
+
 # Backend Target Group (Flask – port 5000)
 resource "aws_lb_target_group" "backend" {
+  name        = "${var.project_name}-backend-tg"
   port        = 5000
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
   target_type = "ip"
 
-  # Flask has NO GET route, so:
-  # GET / → 404 → accepted by matcher 200-399
   health_check {
     path                = "/"
     protocol            = "HTTP"
-    matcher             = "200-399"
+    matcher             = "404"
     interval            = 30
     timeout             = 5
     healthy_threshold   = 2
-    unhealthy_threshold = 3
+    unhealthy_threshold = 2
   }
 }
+
 
 # ALB Listener
 resource "aws_lb_listener" "http" {
